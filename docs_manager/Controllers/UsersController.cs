@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using docs_manager.Models.Dtos;
 using docs_manager.Models.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace docs_manager.Controllers
 {
@@ -27,16 +28,20 @@ namespace docs_manager.Controllers
         [HttpPost]
         public IActionResult CreateUser(CreateUserDto createUserDto)
         {
+            var passwordHasher = new PasswordHasher<User>();
             var userEntity = new User()
             {
                 FirstName = createUserDto.FirstName,
                 LastName = createUserDto.LastName,
                 Email = createUserDto.Email,
+                Epf = createUserDto.Epf,
                 Phone = createUserDto.Phone,
-                PasswordHash = createUserDto.PasswordHash,
+                PasswordHash = "",
                 CompanyId = createUserDto.CompanyId,
                 DepartmentId = createUserDto.DepartmentId
             };
+
+            userEntity.PasswordHash = passwordHasher.HashPassword(userEntity, createUserDto.PasswordHash);
 
             dbContext.Users.Add(userEntity);
             dbContext.SaveChanges();
@@ -77,6 +82,11 @@ namespace docs_manager.Controllers
             if (updateUserDto.LastName is not null)
             {
                 user.LastName = updateUserDto.LastName;
+            }
+
+            if (updateUserDto.Epf is not null)
+            {
+                user.Epf = updateUserDto.Epf;
             }
 
             if (updateUserDto.Phone is not null)
